@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "762475537671",
+    "project_id": "whatsapp-flutter-24b94",
+    "storage_bucket": "whatsapp-flutter-24b94.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762475537671:android:0e753395bedb4d875091a2",
+        "android_client_info": {
+          "package_name": "com.wagdyBuild.whats_app_clone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGIwZTljchAhWHVW93DqiZcQ-xnJmYQeA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
