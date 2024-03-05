@@ -16,9 +16,6 @@ class StoryScreen extends StatelessWidget {
         controller: controller,
         inline: true, // Display story inline instead of fullscreen
         repeat: false,
-        
-        onStoryShow: (value) => {
-        },
         onComplete: () {
           
           Navigator.of(context).pop();

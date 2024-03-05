@@ -4,14 +4,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:whats_app_clone/models/user_model.dart';
+import 'package:whats_app_clone/data/models/user_model.dart';
 
-// ignore: must_be_immutable
 class EditStory extends StatefulWidget {
-  File? storyImageUrl;
-  UserModel currentUserData = UserModel();
+  final File storyImageUrl;
+  final UserModel currentUserData;
 
-  EditStory({
+  const EditStory({
     super.key,
     required this.storyImageUrl,
     required this.currentUserData,
@@ -24,13 +23,17 @@ class EditStory extends StatefulWidget {
 class _EditStory extends State<EditStory> {
   File? baseStoryImageUrl;
   String? currentUserID;
- // UploadTask? _uploadTask;
+  late final FirebaseStorage storageRef;
+  late final FirebaseDatabase dbRef;
+  // UploadTask? _uploadTask;
   TextEditingController captionController = TextEditingController();
 
   @override
   void initState() {
     currentUserID = widget.currentUserData.userId!;
-    baseStoryImageUrl = widget.storyImageUrl!;
+    baseStoryImageUrl = widget.storyImageUrl;
+    storageRef = FirebaseStorage.instance;
+    dbRef = FirebaseDatabase.instance;
     super.initState();
   }
 
@@ -107,6 +110,30 @@ class _EditStory extends State<EditStory> {
                     //shape: const StadiumBorder(side: BorderSide(width: 1.0, color: Colors.white)),
                     splashColor: Colors.grey,
                     onPressed: () async {
+                      showDialog(
+                        barrierDismissible: false,
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            alignment: Alignment.center,
+                            title: Text("Loading the story ..."),
+                            content: SizedBox(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircularProgressIndicator(
+                                    color: Colors.pink[700],
+                                    strokeWidth: 3,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ); // Show the upload button
+                        },
+                      );
+
                       await uploadStatusImage(baseStoryImageUrl!);
                     },
                     backgroundColor: Colors.white70,
@@ -160,15 +187,26 @@ class _EditStory extends State<EditStory> {
 
   Future<void> uploadStatusImage(File imageFile) async {
     try {
-      final storageReference = FirebaseStorage.instance
+      final ref = await storageRef
           .ref()
           .child("status_images")
           .child(currentUserID!)
-          .child(DateTime.now().toString());
+          .child(DateTime.now().millisecondsSinceEpoch.toString());
+      await ref.putFile(imageFile);
 
-      UploadTask uploadTask = storageReference.putFile(imageFile);
+      String url = await ref.getDownloadURL();
 
-      
+      await putUrlIntoDatabase(url);
+    } catch (e) {}
+    ///////////////////////////////////////////
+    /* try {
+      final ref = storageRef
+          .ref()
+          .child("status_images")
+          .child(currentUserID!)
+          .child(DateTime.now().millisecondsSinceEpoch.toString());
+      UploadTask uploadTask = ref.putFile(imageFile);
+
       StreamBuilder<TaskSnapshot>(
         stream: uploadTask.snapshotEvents,
         builder: (context, snapshot) {
@@ -177,61 +215,58 @@ class _EditStory extends State<EditStory> {
             var taskSnapshot = snapshot.data!;
             progress = taskSnapshot.bytesTransferred / taskSnapshot.totalBytes;
           }
-          return Column(
-            children: [
-              LinearProgressIndicator(value: progress),
-              Text('${(progress * 100).toStringAsFixed(2)}%'),
-            ],
+          
+          return AlertDialog(
+            alignment: Alignment.center,
+            title: Text("Loading the story ..."),
+            content: SizedBox(
+              child: Column(
+                children: [
+                  LinearProgressIndicator(value: progress),
+                  Text('${(progress * 100).toStringAsFixed(2)}%'),
+                ],
+              ),
+            ),
           );
         },
       );
       await uploadTask.then((p0) => {
-            putUrlIntoDatabase(storageReference.getDownloadURL().toString()),
+            putUrlIntoDatabase(ref.getDownloadURL().toString()),
           });
-      //await uploadTask.whenComplete(() => print('File uploaded Successfully'));
     } catch (e) {
       print("Error : $e");
-    }
+    } */
   }
 
   Future<void> putUrlIntoDatabase(String imageFileURL) async {
     String caption = captionController.text.toString();
     captionController.text = "";
-    /* final storageReference = FirebaseStorage.instance
-        .ref()
-        .child("status_images")
-        .child(currentUserID!)
-        .child(DateTime.now().toString());
-    await storageReference.putFile(imageFile);
 
-    String url = await storageReference.getDownloadURL(); */
-
-    await FirebaseDatabase.instance
-        .ref()
-        .child("Status")
-        .child(currentUserID!)
-        .push()
-        .set({
-      "statusId": currentUserID!,
-      "userId": currentUserID!,
-      "time": DateTime.now().millisecondsSinceEpoch,
-      "type": "image",
-      "seen": false,
-      "caption": caption,
-      "userName": widget.currentUserData.name!,
-      "statusImageUri": imageFileURL,
-      "statusVideoUri": ""
-    }).then((value) => {
-              Fluttertoast.showToast(
-                  msg: "Status successfully uploaded",
-                  backgroundColor: Colors.blue,
-                  gravity: ToastGravity.BOTTOM,
-                  textColor: Colors.white,
-                  toastLength: Toast.LENGTH_SHORT,
-                  timeInSecForIosWeb: 1,
-                  fontSize: 15),
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil("HomePage", (route) => false)
-            });
+    await dbRef.ref().child("Status").child(currentUserID!).push().set(
+      {
+        "statusId": currentUserID!,
+        "userId": currentUserID!,
+        "time": DateTime.now().millisecondsSinceEpoch,
+        "type": "image",
+        "seen": false,
+        "caption": caption,
+        "userName": widget.currentUserData.name!,
+        "statusImageUri": imageFileURL,
+        "statusVideoUri": ""
+      },
+    ).then(
+      (value) => {
+        Fluttertoast.showToast(
+            msg: "Status successfully uploaded",
+            backgroundColor: Colors.blue,
+            gravity: ToastGravity.BOTTOM,
+            textColor: Colors.white,
+            toastLength: Toast.LENGTH_SHORT,
+            timeInSecForIosWeb: 1,
+            fontSize: 15),
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil("HomePage", (route) => false)
+      },
+    );
   }
 }

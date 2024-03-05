@@ -2,15 +2,13 @@ import 'package:circular_image/circular_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:whats_app_clone/models/group_model.dart';
-import 'package:whats_app_clone/viewModels/database_viewModel.dart';
-import 'package:whats_app_clone/views/pages/group_chatting.dart';
-import 'package:whats_app_clone/views/pages/view_image_page.dart';
+import 'package:whats_app_clone/data/models/group_model.dart';
+import 'package:whats_app_clone/data/viewModels/database_viewModel.dart';
+import 'package:whats_app_clone/presentation/screens/group_chatting.dart';
+import 'package:whats_app_clone/presentation/screens/view_image_page.dart';
 
-// ignore: must_be_immutable
 class GroupsTab extends StatefulWidget {
-  List<GroupModel> groupsList = [];
-  GroupsTab({super.key, required this.groupsList});
+  const GroupsTab({super.key});
 
   @override
   State<GroupsTab> createState() => _GroupsTab();
@@ -18,12 +16,6 @@ class GroupsTab extends StatefulWidget {
 
 class _GroupsTab extends State<GroupsTab> {
   List<GroupModel> groupList = [];
-
-  @override
-  void initState() {
-    //groupList = widget.groupsList;
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,12 +71,6 @@ class _GroupsTab extends State<GroupsTab> {
                                     color: Colors.black,
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center),
-                            Text("${groupList[i].groupId}",
-                                style: const TextStyle(
-                                  color: Colors.blue,
-                                  fontSize: 13,
-                                ),
                                 textAlign: TextAlign.center),
                           ],
                         ),

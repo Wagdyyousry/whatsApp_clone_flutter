@@ -1,15 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:whats_app_clone/models/group_model.dart';
-import 'package:whats_app_clone/models/message_model.dart';
-import 'package:whats_app_clone/models/status_model.dart';
-import 'package:whats_app_clone/models/user_model.dart';
+import 'package:whats_app_clone/data/models/group_model.dart';
+import 'package:whats_app_clone/data/models/message_model.dart';
+import 'package:whats_app_clone/data/models/status_model.dart';
+import 'package:whats_app_clone/data/models/user_model.dart';
 
 class RealtimeRepo {
-  String? currentUserID = FirebaseAuth.instance.currentUser!.uid;
-  final dbRef = FirebaseDatabase.instance;
+  String? currentUserID;
+  late FirebaseDatabase dbRef;
 
-  RealtimeRepo() {}
+  RealtimeRepo() {
+    dbRef = FirebaseDatabase.instance;
+    currentUserID = FirebaseAuth.instance.currentUser!.uid;
+  }
 
   Future<UserModel> getCurrentUser() async {
     UserModel currentUser = UserModel();
@@ -35,7 +38,7 @@ class RealtimeRepo {
         final data = event.snapshot.value as Map<dynamic, dynamic>;
         for (var userMap in data.values) {
           UserModel model = UserModel.fromMap(userMap);
-          if (model.userId != currentUserID) {
+          if (currentUserID != model.userId) {
             userList.add(model);
             //print("uuuuuuuuuuuuu${model.name}");
           }
@@ -103,7 +106,23 @@ class RealtimeRepo {
         }
       }
     });
+
     return messageList;
+
+    // final eventSnapshot = dbRef
+    //     .ref('FriendsChats')
+    //     .child(currentUserID!)
+    //     .child(receiverId)
+    //     .once();
+    // eventSnapshot.then((value) {
+    //   messageList.clear();
+    //   final data = value.snapshot.value as Map<dynamic, dynamic>;
+    //   for (var userMap in data.values) {
+    //     MessageModel model = MessageModel.fromMap(userMap);
+    //     messageList.add(model);
+    //     //print("========${model.message}");
+    //   }
+    // });
   }
 
   Future<List<MessageModel>> getGroupsMessages(String groupId) async {
@@ -121,30 +140,13 @@ class RealtimeRepo {
           for (var userMap in data.values) {
             MessageModel model = MessageModel.fromMap(userMap);
             messageList.add(model);
-            //print("++++++${model.message}");
           }
         }
       },
     );
     return messageList;
+
+  
   }
 }
 
-
-/*  Future<List<MessageModel>> getUsersMessages(String receiverId) async {
-    List<MessageModel> messageList = [];
-    DataSnapshot dataSnapshot = (await dbRef
-        .ref('FriendsChats')
-        .child(currentUserID!)
-        .child(receiverId)
-        .once()) as DataSnapshot; // Use 'once' instead of 'onValue'
-
-    final data = dataSnapshot.value as Map<String, dynamic>;
-    for (var userMap in data.values) {
-      MessageModel model = MessageModel.fromMap(userMap);
-      messageList.add(model);
-      print("=====${model.message}");
-    }
-
-    return messageList;
-  } */

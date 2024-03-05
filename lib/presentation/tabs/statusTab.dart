@@ -5,32 +5,28 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:status_view/status_view.dart';
 import 'package:story_view/story_view.dart';
-import 'package:whats_app_clone/models/status_model.dart';
-import 'package:whats_app_clone/models/user_model.dart';
-import 'package:whats_app_clone/viewModels/database_viewModel.dart';
-import 'package:whats_app_clone/views/components/edit_story.dart';
-import 'package:whats_app_clone/views/components/story_view.dart';
+import 'package:whats_app_clone/data/models/status_model.dart';
+import 'package:whats_app_clone/data/models/user_model.dart';
+import 'package:whats_app_clone/data/viewModels/database_viewModel.dart';
+import 'package:whats_app_clone/presentation/widgets/edit_story.dart';
+import 'package:whats_app_clone/presentation/widgets/story_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 // ignore: must_be_immutable
 class StatusTab extends StatefulWidget {
-  List<List<StatusModel>> allStatusList = [];
-  List<StatusModel> currentUserStatus = [];
-  List<List<StatusModel>> othersUsersStatus = [];
   UserModel currentUserData = UserModel();
-  StatusTab(
-      {super.key, required this.allStatusList, required this.currentUserData});
+  StatusTab({super.key, required this.currentUserData});
 
   @override
   State<StatusTab> createState() => _StatusTab();
 }
 
 class _StatusTab extends State<StatusTab> {
+  List<List<StatusModel>> allUserStatus = [];
+  List<List<StatusModel>> otherUsersStatus = [];
+  List<StatusModel> currentUserStatus = [];
   UserModel currentUserData = UserModel();
   String? currentUserID;
-  List<StatusModel> currentUserStatus = [];
-  List<List<StatusModel>> otherUsersStatus = [];
-  List<List<StatusModel>> allUserStatus = [];
   List<StoryItem> storyItems = [];
   final storyController = StoryController();
   File? storyImageUrl;
@@ -184,7 +180,7 @@ class _StatusTab extends State<StatusTab> {
       storyImageUrl = File(pickedFile.path);
       Get.to(
         () => EditStory(
-          storyImageUrl: storyImageUrl,
+          storyImageUrl: storyImageUrl!,
           currentUserData: currentUserData,
         ),
       );
@@ -204,9 +200,13 @@ class _StatusTab extends State<StatusTab> {
           StoryItem.pageImage(
             url: story.statusImageUri!,
             controller: storyController,
-            caption: story.caption != null
-                ? "${story.caption} \n\n\n\n $lastStatusTime"
-                : ". \n\n\n\n $lastStatusTime",
+            caption: Text(
+              story.caption != null
+                  ? "${story.caption} \n\n <----> \n\n $lastStatusTime"
+                  : ". \n\n\n\n $lastStatusTime",
+              style: TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
             imageFit: BoxFit.contain,
             duration: const Duration(seconds: 5),
           ),

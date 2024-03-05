@@ -8,16 +8,18 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:whats_app_clone/models/message_model.dart';
-import 'package:whats_app_clone/models/user_model.dart';
-import 'package:whats_app_clone/viewModels/database_viewModel.dart';
-import 'package:whats_app_clone/views/components/message_widget.dart';
-import 'package:whats_app_clone/views/pages/view_image_page.dart';
+import 'package:whats_app_clone/data/models/message_model.dart';
+import 'package:whats_app_clone/data/models/user_model.dart';
+import 'package:whats_app_clone/data/viewModels/database_viewModel.dart';
+import 'package:whats_app_clone/presentation/screens/view_image_page.dart';
+import 'package:whats_app_clone/presentation/widgets/message_widget.dart';
 
 // ignore: must_be_immutable
 class ChattingPage extends StatefulWidget {
   UserModel userModel;
+
   ChattingPage({super.key, required this.userModel});
 
   @override
@@ -50,42 +52,7 @@ class _ChattingPage extends State<ChattingPage> {
     RealtimeViewModel viewModel = context.watch<RealtimeViewModel>();
     gettingUsersMessages(viewModel);
     return Scaffold(
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white, size: 25),
-        titleSpacing: 0,
-        elevation: 10,
-        shadowColor: const Color(0xFF0b6156),
-        backgroundColor: const Color(0xFF0b6156),
-        title: Row(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(right: 10),
-              height: 30,
-              width: 30,
-              child: CircularImage(
-                  onImageTap: () {
-                    if (userModel.profileImageUri != null) {
-                      Get.to(
-                        () => ViewImagePage(image: userModel.profileImageUri),
-                      );
-                    }
-                  },
-                  radius: 25,
-                  borderWidth: 1.5,
-                  borderColor: Colors.blue,
-                  source: userModel.profileImageUri ?? 'images/bg3.jpg'),
-            ),
-            Text(
-              userModel.name.toString(),
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
+      appBar: appBarWidget(),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -97,21 +64,23 @@ class _ChattingPage extends State<ChattingPage> {
               child: Consumer<RealtimeViewModel>(
                 builder: (context, viewModel, child) {
                   return ListView.builder(
-                    reverse: true, // Start from the bottom
+                    reverse: true,
                     itemCount: messageList.length,
                     itemBuilder: (context, i) {
+                      final df = DateFormat("dd/MM hh:mm a");
+                      final messagetime = DateTime.fromMillisecondsSinceEpoch(
+                          messageList[i].time!);
+                      final String sendTime = df.format(messagetime);
                       return messageList[i].senderId == currentUserId
                           ? MessageWidget(
+                              sendTime: sendTime,
                               isMe: true,
                               message: messageList[i].message!,
-                              type: messageList[i].messageType!,
-                              messageModel: messageList[i],
                             )
                           : MessageWidget(
+                              sendTime: sendTime,
                               isMe: false,
                               message: messageList[i].message!,
-                              type: messageList[i].messageType!,
-                              messageModel: messageList[i],
                             );
                     },
                   );
@@ -119,15 +88,15 @@ class _ChattingPage extends State<ChattingPage> {
               ),
             ),
             Container(
-              padding: const EdgeInsets.only(top: 3, bottom: 60),
+              padding: const EdgeInsets.only(top: 5, bottom: 10, left: 7),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.file_present),
-                    onPressed: () {
-                      _showBottomSheet(context);
-                    },
-                  ),
+                  // IconButton(
+                  //   icon: const Icon(Icons.file_present),
+                  //   onPressed: () {
+                  //     //_showBottomSheet(context);
+                  //   },
+                  // ),
                   Expanded(
                     child: TextField(
                       controller: messageController,
@@ -328,5 +297,44 @@ class _ChattingPage extends State<ChattingPage> {
         },
       );
     });
+  }
+
+  AppBar appBarWidget() {
+    return AppBar(
+      iconTheme: const IconThemeData(color: Colors.white, size: 25),
+      titleSpacing: 0,
+      elevation: 10,
+      shadowColor: const Color(0xFF0b6156),
+      backgroundColor: const Color(0xFF0b6156),
+      title: Row(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(right: 10),
+            height: 30,
+            width: 30,
+            child: CircularImage(
+                onImageTap: () {
+                  if (userModel.profileImageUri != null) {
+                    Get.to(
+                      () => ViewImagePage(image: userModel.profileImageUri),
+                    );
+                  }
+                },
+                radius: 25,
+                borderWidth: 1.5,
+                borderColor: Colors.blue,
+                source: userModel.profileImageUri ?? 'images/bg3.jpg'),
+          ),
+          Text(
+            userModel.name.toString(),
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
   }
 }

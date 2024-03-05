@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:whats_app_clone/models/user_model.dart';
+import 'package:whats_app_clone/data/models/user_model.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});

@@ -3,22 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:whats_app_clone/firebase_options.dart';
-import 'package:whats_app_clone/viewModels/database_viewModel.dart';
-import 'package:whats_app_clone/views/pages/homepage.dart';
-import 'package:whats_app_clone/views/components/splash_screen.dart';
-import 'package:whats_app_clone/views/pages/signIn.dart';
-import 'package:whats_app_clone/views/pages/signUp.dart';
+import 'package:whats_app_clone/data/viewModels/database_viewModel.dart';
+import 'package:whats_app_clone/presentation/screens/homepage.dart';
+import 'package:whats_app_clone/presentation/widgets/splash_screen.dart';
+import 'package:whats_app_clone/presentation/screens/signIn.dart';
+import 'package:whats_app_clone/presentation/screens/signUp.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   //return runApp(const MyApp());
-  return runApp(
-    ChangeNotifierProvider(
-      create: (context) => RealtimeViewModel(),
-      child: MyApp(),
-    ),
-  );
+  runApp(ChangeNotifierProvider(
+    create: (context) => RealtimeViewModel(),
+    child: MyApp(),
+  ));
+  //SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky,overlays: []);
+  //SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
 }
 
 class MyApp extends StatelessWidget {
@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
       getPages: [
         GetPage(name: "/SignUp", page: () => const SignUp()),
@@ -61,5 +62,3 @@ class MyApp extends StatelessWidget {
     // );
   }
 }
-
-

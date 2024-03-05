@@ -1,16 +1,20 @@
 import 'package:circular_image/circular_image.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:whats_app_clone/models/user_model.dart';
-import 'package:whats_app_clone/viewModels/database_viewModel.dart';
-import 'package:whats_app_clone/views/pages/chatting_page.dart';
-import 'package:whats_app_clone/views/pages/view_image_page.dart';
+import 'package:whats_app_clone/data/models/message_model.dart';
+import 'package:whats_app_clone/data/models/user_model.dart';
+import 'package:whats_app_clone/data/viewModels/database_viewModel.dart';
+import 'package:whats_app_clone/presentation/screens/chatting_page.dart';
+import 'package:whats_app_clone/presentation/screens/view_image_page.dart';
 
-// ignore: must_be_immutable
+
 class ChatTab extends StatefulWidget {
-  List<UserModel> usersList = [];
-  ChatTab({super.key, required this.usersList});
+  final List<UserModel> usersList = [];
+  final UserModel currentUserData;
+
+  ChatTab({super.key, required this.currentUserData});
 
   @override
   State<ChatTab> createState() => _ChatTab();
@@ -18,6 +22,16 @@ class ChatTab extends StatefulWidget {
 
 class _ChatTab extends State<ChatTab> {
   List<UserModel> userList = [];
+  UserModel currentUser = UserModel();
+  late DatabaseReference db;
+  String lastMessage = '...';
+
+  @override
+  void initState() {
+    db = FirebaseDatabase.instance.ref('FriendsChats');
+    currentUser = widget.currentUserData;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +52,6 @@ class _ChatTab extends State<ChatTab> {
               UserModel currrentUser = userList[i];
               return InkWell(
                 onTap: () {
-                  
                   Get.to(() => ChattingPage(userModel: currrentUser));
                 },
                 child: Card(
@@ -66,7 +79,7 @@ class _ChatTab extends State<ChatTab> {
                               borderWidth: 1.5,
                               borderColor: Colors.blue,
                               source: currrentUser.profileImageUri ??
-                                  'images/bg3.jpg'),
+                                  'images/user.png'),
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,12 +89,6 @@ class _ChatTab extends State<ChatTab> {
                                     color: Colors.black,
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center),
-                            Text("${currrentUser.lastMessage}",
-                                style: const TextStyle(
-                                  color: Colors.blue,
-                                  fontSize: 13,
-                                ),
                                 textAlign: TextAlign.center),
                           ],
                         ),
@@ -153,10 +160,50 @@ class _ChatTab extends State<ChatTab> {
         }); */
   }
 
+  getUserLastMessage(UserModel receiverUser) {
+    if (currentUser.userId != null) {
+      final snapshot = db
+          .child(currentUser.userId!)
+          .child(receiverUser.userId!)
+          .orderByChild('time')
+          .limitToLast(1)
+          .once();
+      snapshot.then((value) {
+        final data = value.snapshot.value as Map<dynamic, dynamic>;
+        for (var messageMap in data.values) {
+          MessageModel messageModel = MessageModel.fromMap(messageMap);
 
+          lastMessage = messageModel.message!;
+          print("======||${messageModel.message}||");
+        }
+      });
+    }
 
+    // print("======${currentUser.userId}||${receiverUser.userId}||");
 
+    // if (currentUser.userId != null) {
+    //   FirebaseDatabase.instance
+    //       .ref('FriendsChats')
+    //       .child(currentUser.userId!)
+    //       .child(receiverUser.userId!)
+    //       .orderByChild('time')
+    //       .limitToLast(1)
+    //       .onValue
+    //       .listen(
+    //     (DatabaseEvent event) {
+    //       print('Inside listen callback');
+    //       if (event.snapshot.value != null) {
+    //         final data = event.snapshot.value as Map<dynamic, dynamic>;
+    //         for (var messageMap in data.values) {
+    //           MessageModel messageModel = MessageModel.fromMap(messageMap);
+
+    //           lastMessage = messageModel.message!;
+
+    //           print("======||${messageModel.message}||");
+    //         }
+    //       }
+    //     },
+    //   );
+    // }
+  }
 }
-
-
-

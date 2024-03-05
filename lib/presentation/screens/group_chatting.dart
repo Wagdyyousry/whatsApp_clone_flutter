@@ -4,12 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:whats_app_clone/models/group_model.dart';
-import 'package:whats_app_clone/models/message_model.dart';
-import 'package:whats_app_clone/viewModels/database_viewModel.dart';
-import 'package:whats_app_clone/views/components/message_widget.dart';
-import 'package:whats_app_clone/views/pages/view_image_page.dart';
+import 'package:whats_app_clone/data/models/group_model.dart';
+import 'package:whats_app_clone/data/models/message_model.dart';
+import 'package:whats_app_clone/data/viewModels/database_viewModel.dart';
+import 'package:whats_app_clone/presentation/screens/view_image_page.dart';
+import 'package:whats_app_clone/presentation/widgets/message_widget.dart';
 
 // ignore: must_be_immutable
 class GroupChatting extends StatefulWidget {
@@ -82,33 +83,37 @@ class _ChattingPage extends State<GroupChatting> {
         ),
         child: Column(
           children: [
-            Expanded(child: Consumer<RealtimeViewModel>(
-              builder: (context, viewModel, child) {
-                gettingGroupsMessages(viewModel);
+            Expanded(
+              child: Consumer<RealtimeViewModel>(
+                builder: (context, viewModel, child) {
+                  gettingGroupsMessages(viewModel);
 
-                return ListView.builder(
-                  reverse: true, // Start from the bottom
-                  itemCount: messageList.length,
-                  itemBuilder: (context, i) {
-                    return messageList[i].senderId == currentUserId
-                        ? MessageWidget(
-                            isMe: true,
-                            message: messageList[i].message!,
-                            type: messageList[i].messageType!,
-                            messageModel: messageList[i],
-                          )
-                        : MessageWidget(
-                            isMe: false,
-                            message: messageList[i].message!,
-                            type: messageList[i].messageType!,
-                            messageModel: messageList[i],
-                          );
-                  },
-                );
-              },
-            )),
+                  return ListView.builder(
+                    reverse: true, // Start from the bottom
+                    itemCount: messageList.length,
+                    itemBuilder: (context, i) {
+                      final df = DateFormat("dd-MM hh:mm a");
+                      final messagetime = DateTime.fromMillisecondsSinceEpoch(
+                          messageList[i].time!);
+                      final String sendTime = df.format(messagetime);
+                      return messageList[i].senderId == currentUserId
+                          ? MessageWidget(
+                              sendTime: sendTime,
+                              isMe: true,
+                              message: messageList[i].message!,
+                            )
+                          : MessageWidget(
+                              sendTime: sendTime,
+                              isMe: false,
+                              message: messageList[i].message!,
+                            );
+                    },
+                  );
+                },
+              ),
+            ),
             Container(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(top: 5, bottom: 10, left: 7),
               child: Row(
                 children: [
                   Expanded(
@@ -121,13 +126,13 @@ class _ChattingPage extends State<GroupChatting> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.send),
-                    onPressed: () async {
-                      await sendingMessages();
+                    onPressed: () {
+                      sendingMessages();
                     },
                   ),
                 ],
               ),
-            ),
+            )
           ],
         ),
       ),
@@ -164,7 +169,7 @@ class _ChattingPage extends State<GroupChatting> {
       messageList = await viewModel.getGroupsMessages(groupModel.groupId!);
     }
     setState(() {
-      messageList.sort((a, b) => a.time!.compareTo(b.time!));
+      messageList.sort((a, b) => b.time!.compareTo(a.time!));
     });
   }
   // Future<void> gettingGroupsMessages(String groupId) async {

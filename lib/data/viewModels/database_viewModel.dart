@@ -1,18 +1,19 @@
 import 'package:flutter/foundation.dart';
-import 'package:whats_app_clone/models/group_model.dart';
-import 'package:whats_app_clone/models/message_model.dart';
-import 'package:whats_app_clone/models/status_model.dart';
-import 'package:whats_app_clone/models/user_model.dart';
-import 'package:whats_app_clone/repository/database_repo.dart';
+import 'package:whats_app_clone/data/models/group_model.dart';
+import 'package:whats_app_clone/data/models/message_model.dart';
+import 'package:whats_app_clone/data/models/status_model.dart';
+import 'package:whats_app_clone/data/models/user_model.dart';
+import 'package:whats_app_clone/data/repository/database_repo.dart';
 
 class RealtimeViewModel extends ChangeNotifier {
-  final RealtimeRepo _userRepository = RealtimeRepo();
+  late final RealtimeRepo _userRepository;
   List<UserModel> userList = [];
   List<GroupModel> groupList = [];
   List<List<StatusModel>> allStatusList = [];
   UserModel currentUser = UserModel();
 
   RealtimeViewModel() {
+    _userRepository = RealtimeRepo();
     getCurrentUser();
     getAllUsers();
     getAllGroups();

@@ -7,13 +7,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:whats_app_clone/models/user_model.dart';
-import 'package:whats_app_clone/views/pages/view_image_page.dart';
+import 'package:whats_app_clone/data/models/user_model.dart';
+import 'package:whats_app_clone/presentation/screens/view_image_page.dart';
 
-// ignore: must_be_immutable
+
 class ProfilePage extends StatefulWidget {
-  UserModel currentUserData = UserModel();
-  ProfilePage({super.key, required this.currentUserData});
+  final UserModel currentUserData;
+  const ProfilePage({super.key, required this.currentUserData});
 
   @override
   State<StatefulWidget> createState() => _ProfilePage();
